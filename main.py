@@ -1,6 +1,8 @@
+import json
+from os import environ
 import time
 from threading import Lock
-from flask import Flask, render_template, session, request, \
+from flask import Flask,jsonify, render_template, session, request, \
     copy_current_request_context
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
@@ -40,16 +42,18 @@ def background_thread():
         socketio.emit('data', teste.to_dict())
         socketio.sleep(10)
 
-@socketio.on('disconnect')
-def disconnect():
-    print('client disconnected',request.sid)
+# @socketio.on('disconnect')
+# def disconnect():
+#     print('client disconnected',request.sid)
 
 @socketio.on('connect')
 def connect():
     global thread
+    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != environ.get('API_KEY'):
+        disconnect()
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
-
+    
 if __name__ == '__main__':
     socketio.run(app,debug=True,host="0.0.0.0", port=8080)
