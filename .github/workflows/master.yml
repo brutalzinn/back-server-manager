@@ -51,4 +51,4 @@ jobs:
         script_stop: true
         script: |
           cd /home/brutalzinn/servicos
-          bash start.sh
+          docker-compose up

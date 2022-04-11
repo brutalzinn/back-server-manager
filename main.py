@@ -2,13 +2,11 @@ import json
 import time
 import psutil
 import os
-from dotenv import load_dotenv
 from threading import Lock
 from flask import Flask, request
 from flask_socketio import SocketIO, disconnect
 from psutil._common import bytes2human
 from models.stats_model import Data
-load_dotenv()
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, logger=True)
@@ -55,4 +53,4 @@ def connect():
             thread = socketio.start_background_task(background_thread)
     
 if __name__ == '__main__':
-    socketio.run(app,debug=True,host="0.0.0.0", port=8888)
+    socketio.run(app,debug=True,host="127.0.0.1", port=8888)
