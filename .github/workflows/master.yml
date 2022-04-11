@@ -39,7 +39,7 @@ jobs:
         envs: API_KEY
         script: |
           sudo rm -f .env
-          echo "API_KEY=$API_KEY" >>/home/brutalzinn/servicos/.env
+          echo "API_KEY=$API_KEY" >/home/brutalzinn/servicos/.env
 
     - name: Executando docker compose
       uses: appleboy/ssh-action@master
@@ -51,5 +51,5 @@ jobs:
         script_stop: true
         script: |
           cd /home/brutalzinn/servicos
-          pip3 install -r .\requirements.txt
+          pip3 install -r requirements.txt
           python3 main.py

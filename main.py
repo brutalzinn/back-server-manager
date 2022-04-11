@@ -1,15 +1,14 @@
 import json
-from os import environ
 import time
-from threading import Lock
-from flask import Flask,jsonify, render_template, session, request, \
-    copy_current_request_context
-from flask_socketio import SocketIO, emit, join_room, leave_room, \
-    close_room, rooms, disconnect
 import psutil
+import os
+from dotenv import load_dotenv
+from threading import Lock
+from flask import Flask, request
+from flask_socketio import SocketIO, disconnect
 from psutil._common import bytes2human
-
 from models.stats_model import Data
+load_dotenv()
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, logger=True)
@@ -49,7 +48,7 @@ def background_thread():
 @socketio.on('connect')
 def connect():
     global thread
-    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != environ.get('API_KEY'):
+    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
         disconnect()
     with thread_lock:
         if thread is None:
