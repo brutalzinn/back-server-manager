@@ -51,4 +51,5 @@ jobs:
         script_stop: true
         script: |
           cd /home/brutalzinn/servicos
-          python main.py
+          pip3 install -r .\requirements.txt
+          python3 main.py
