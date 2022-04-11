@@ -51,4 +51,4 @@ jobs:
         script_stop: true
         script: |
           cd /home/brutalzinn/servicos
-          docker-compose up
+          docker-compose up --force-recreate >> compose.log 2>&1 &
