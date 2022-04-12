@@ -30,6 +30,9 @@ jobs:
       uses: appleboy/ssh-action@master
       env:
         API_KEY: ${{ secrets.API_KEY }}
+        ORIGIN: ${{ secrets.ORIGIN }}
+        FLASK_PORT: ${{ secrets.FLASK_PORT }}
+        HOST: ${{ secrets.HOST }}
 
       with:
         host: ${{ secrets.HOST }}
@@ -42,7 +45,7 @@ jobs:
           echo "API_KEY=$API_KEY" >/home/brutalzinn/servicos/.env
           echo "FLASK_PORT=$FLASK_PORT" >>/home/brutalzinn/servicos/.env
           echo "ORIGIN=$ORIGIN" >>/home/brutalzinn/servicos/.env
-          echo "HOST=$host" >>/home/brutalzinn/servicos/.env
+          echo "HOST=$HOST" >>/home/brutalzinn/servicos/.env
 
     - name: Executando docker compose
       uses: appleboy/ssh-action@master
