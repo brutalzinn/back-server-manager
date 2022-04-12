@@ -4,6 +4,8 @@ services:
     build: .
     container_name: server-details
     restart: always
+    ports:
+      - '5555:5555'
     env_file:
       - .env
     volumes:

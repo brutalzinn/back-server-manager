@@ -39,18 +39,18 @@ def background_thread():
         socketio.emit('data', teste.to_dict())
         socketio.sleep(10)
 
-# @socketio.on('disconnect')
-# def disconnect():
-#     print('client disconnected',request.sid)
+@socketio.on('disconnect')
+def disconnect():
+    print('client disconnected',request.sid)
 
 @socketio.on('connect')
 def connect():
     global thread
-    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
-        disconnect()
+    # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
+    #     disconnect()
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
     
 if __name__ == '__main__':
-    socketio.run(app,debug=True,host="0.0.0.0", port=8888)
+    socketio.run(app,debug=True, host=os.getenv('HOST'),port=os.getenv('PORT'))
