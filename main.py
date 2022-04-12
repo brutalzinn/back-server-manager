@@ -53,4 +53,4 @@ def connect():
             thread = socketio.start_background_task(background_thread)
     
 if __name__ == '__main__':
-    socketio.run(app,debug=True, host=os.getenv('HOST'),port=os.getenv('PORT'))
+    socketio.run(app,debug=True, host=os.getenv('HOST'),port=os.getenv('FLASK_PORT'))
