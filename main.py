@@ -30,18 +30,18 @@ def background_thread():
         disk_percent = psutil.disk_usage('/').percent
         cpu_percent = psutil.cpu_percent(interval=None)
 
-        teste = Data("Notebook")
+        teste = Data(os.getenv('ORIGIN'))
         teste.memory_used = used_mem
         teste.total_mem = total_mem
         teste.disk_percent = disk_percent
         teste.cpu_percent = cpu_percent
 
         socketio.emit('data', teste.to_dict())
-        socketio.sleep(10)
+        socketio.sleep(5)
 
-@socketio.on('disconnect')
-def disconnect():
-    print('client disconnected',request.sid)
+# @socketio.on('disconnect')
+# def disconnect():
+#     print('client disconnected',request.sid)
 
 @socketio.on('connect')
 def connect():

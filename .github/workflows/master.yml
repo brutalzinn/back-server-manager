@@ -36,10 +36,13 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSHKEY }}
-        envs: API_KEY
+        envs: API_KEY, ORIGIN, FLASK_PORT
         script: |
           sudo rm -f .env
           echo "API_KEY=$API_KEY" >/home/brutalzinn/servicos/.env
+          echo "FLASK_PORT=$FLASK_PORT" >>/home/brutalzinn/servicos/.env
+          echo "ORIGIN=$ORIGIN" >>/home/brutalzinn/servicos/.env
+          echo "HOST=$host" >>/home/brutalzinn/servicos/.env
 
     - name: Executando docker compose
       uses: appleboy/ssh-action@master
