@@ -46,8 +46,8 @@ def disconnect():
 @socketio.on('connect')
 def connect():
     global thread
-    # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
-    #     disconnect()
+    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
+        disconnect()
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
