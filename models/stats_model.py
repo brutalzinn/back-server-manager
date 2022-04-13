@@ -6,7 +6,7 @@
 #
 #     result = data_from_dict(json.loads(json_string))
 
-from typing import Any, TypeVar, Type, cast
+from typing import Optional, Any, TypeVar, Type, cast
 
 
 T = TypeVar("T")
@@ -17,13 +17,29 @@ def from_str(x: Any) -> str:
     return x
 
 
-def from_int(x: Any) -> int:
-    assert isinstance(x, int) and not isinstance(x, bool)
+def from_none(x: Any) -> Any:
+    assert x is None
     return x
 
+
+def from_union(fs, x):
+    for f in fs:
+        try:
+            return f(x)
+        except:
+            pass
+    assert False
+
+
 def from_float(x: Any) -> float:
-    assert isinstance(x, float) and not isinstance(x, bool)
+    assert isinstance(x, (float, int)) and not isinstance(x, bool)
+    return float(x)
+
+
+def to_float(x: Any) -> float:
+    assert isinstance(x, float)
     return x
+
 
 def to_class(c: Type[T], x: Any) -> dict:
     assert isinstance(x, c)
@@ -31,32 +47,36 @@ def to_class(c: Type[T], x: Any) -> dict:
 
 
 class Data:
-    server: str
-    memory_used: str
-    total_mem: str
-    disk_percent: float
-    cpu_percent: float
+    server: Optional[str]
+    memory_used: Optional[str]
+    total_mem: Optional[str]
+    disk_percent: Optional[float]
+    cpu_percent: Optional[float]
+    cpu_frequency: Optional[float]
 
-    def __init__(self, server: str) -> None:
+    def __init__(self, server: Optional[str]) -> None:
         self.server = server
+  
 
     @staticmethod
     def from_dict(obj: Any) -> 'Data':
         assert isinstance(obj, dict)
-        server = from_str(obj.get("server"))
-        memory_used = from_str(obj.get("memory_used"))
-        total_mem = from_str(obj.get("total_mem"))
-        disk_percent = from_float(obj.get("disk_percent"))
-        cpu_percent = from_float(obj.get("cpu_percent"))
-        return Data(server, memory_used, total_mem, disk_percent, cpu_percent)
+        server = from_union([from_str, from_none], obj.get("server"))
+        memory_used = from_union([from_str, from_none], obj.get("memory_used"))
+        total_mem = from_union([from_str, from_none], obj.get("total_mem"))
+        disk_percent = from_union([from_float, from_none], obj.get("disk_percent"))
+        cpu_percent = from_union([from_float, from_none], obj.get("cpu_percent"))
+        cpu_frequency = from_union([from_float, from_none], obj.get("cpu_frequency"))
+        return Data(server, memory_used, total_mem, disk_percent, cpu_percent, cpu_frequency)
 
     def to_dict(self) -> dict:
         result: dict = {}
-        result["server"] = from_str(self.server)
-        result["memory_used"] = from_str(self.memory_used)
-        result["total_mem"] = from_str(self.total_mem)
-        result["disk_percent"] = from_float(self.disk_percent)
-        result["cpu_percent"] = from_float(self.cpu_percent)
+        result["server"] = from_union([from_str, from_none], self.server)
+        result["memory_used"] = from_union([from_str, from_none], self.memory_used)
+        result["total_mem"] = from_union([from_str, from_none], self.total_mem)
+        result["disk_percent"] = from_union([to_float, from_none], self.disk_percent)
+        result["cpu_percent"] = from_union([to_float, from_none], self.cpu_percent)
+        result["cpu_frequency"] = from_union([to_float, from_none], self.cpu_frequency)
         return result
 
 

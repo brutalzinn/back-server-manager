@@ -12,7 +12,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, logger=True)
 thread = None
 thread_lock = Lock()
-
+# CPU_CORE = psutil.cpu_count()
 
 @socketio.on('my event', namespace='/test')
 def handle_my_custom_namespace_event(json):
@@ -26,15 +26,19 @@ def background_thread():
         count += 1
         mem_usage = psutil.virtual_memory()
         total_mem = bytes2human(mem_usage[0])
-        used_mem = bytes2human(mem_usage[3])
+        used_mem = bytes2human(mem_usage[1])
         disk_percent = psutil.disk_usage('/').percent
-        cpu_percent = psutil.cpu_percent(interval=None)
+        cpu_percent = psutil.cpu_percent(interval=0.5)
+        cpu_frequency = psutil.cpu_freq().current
 
         teste = Data(os.getenv('ORIGIN'))
+
+        teste.cpu_frequency = cpu_frequency
+        teste.cpu_percent = cpu_percent
+
         teste.memory_used = used_mem
         teste.total_mem = total_mem
         teste.disk_percent = disk_percent
-        teste.cpu_percent = cpu_percent
 
         socketio.emit('data', teste.to_dict())
         socketio.sleep(5)
