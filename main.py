@@ -18,14 +18,6 @@ thread_lock = Lock()
 def handle_my_custom_namespace_event(json):
     print('received json: ' + str(json))
 
-def get_ram_usage():
-    """
-    Obtains the absolute number of RAM bytes currently in use by the system.
-    :returns: System RAM usage in bytes.
-    :rtype: int
-    """
-    return int(psutil.virtual_memory().total - psutil.virtual_memory().available)
-
 def background_thread():
     """Example of how to send server generated events to clients."""
     count = 0
