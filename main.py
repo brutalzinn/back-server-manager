@@ -18,14 +18,15 @@ thread_lock = Lock()
 def handle_my_custom_namespace_event(json):
     print('received json: ' + str(json))
 
+
 def background_thread():
     """Example of how to send server generated events to clients."""
     count = 0
     while True:
         count += 1
         mem_usage = psutil.virtual_memory()
-        total_mem = bytes2human(mem_usage.total)
-        used_mem = bytes2human(psutil.virtual_memory().total - psutil.virtual_memory().available)
+        total_mem = bytes2human(mem_usage[0])
+        used_mem = bytes2human(mem_usage[3])
         disk_percent = psutil.disk_usage('/').percent
         cpu_percent = psutil.cpu_percent(interval=0.5)
         cpu_frequency = psutil.cpu_freq().current
