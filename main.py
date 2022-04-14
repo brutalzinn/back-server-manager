@@ -16,14 +16,6 @@ app = Flask(__name__)
 socketio = SocketIO(app, logger=False)
 threads = []
 
-# def killThreadById(thread_id):
-
-#     for t in threads: 
-#         exist = thread_id == t.unique_id
-#         if exist : t.stop()
-    
-
-
 @socketio.on('connect')
 def connect():
 
@@ -31,11 +23,10 @@ def connect():
     threads.append(Worker("server_stats", request.sid, socketio))
 
     print(f'Crio {len(threads)} threads para o ' + request.sid)
-    # print("THREADS CRIADAS: " + str(len(threads)))
-    # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
-    #     print("sem api key.")
-    #     socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
-    #     disconnect()
+    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
+        print("sem api key.")
+        socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
+        disconnect()
 
 def checkThreadIsRunning(channel) -> bool:
     for w in threads:
