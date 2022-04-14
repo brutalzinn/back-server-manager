@@ -12,39 +12,30 @@ from models.stats_model import Data
 from ps_utilities import background_thread, processes_thread
 from worker import Worker
 # gambiarra por agora. Até criar uma classe pra facilitar condição de sinal
-
 app = Flask(__name__)
 socketio = SocketIO(app, logger=False)
-
 threads = []
 
+# def killThreadById(thread_id):
 
-def killThreadById(thread_id):
-
-    for t in threads: 
-        exist = thread_id == t.unique_id
-        if exist : t.stop()
+#     for t in threads: 
+#         exist = thread_id == t.unique_id
+#         if exist : t.stop()
     
 
-@socketio.on('disconnect')
-def disconnect():
-    print('client disconnected',request.sid)
-    removeAllThreads(request.sid)
-    print("THREADS ATUAIS: " + str(len(threads)))
 
 @socketio.on('connect')
 def connect():
-    threads.append(Worker("server_process_list",request.sid, socketio))
-    threads.append(Worker("server_stats",request.sid, socketio))
-    print('Adiciono uma thread para o ' + request.sid)
-    print("THREADS CRIADAS: " + str(len(threads)))
 
+    threads.append(Worker("server_process_list", request.sid, socketio))
+    threads.append(Worker("server_stats", request.sid, socketio))
+
+    print(f'Crio {len(threads)} threads para o ' + request.sid)
+    # print("THREADS CRIADAS: " + str(len(threads)))
     # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
     #     print("sem api key.")
     #     socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
     #     disconnect()
-
-
 
 def checkThreadIsRunning(channel) -> bool:
     for w in threads:
@@ -57,9 +48,9 @@ def killThreadByChannel(channel) -> bool:
         if w.socket_channel == channel:
             w.stop()
 
-def getThreadByChannel(channel, socket_id) -> Worker:
+def getThreadByChannel(channel:str , socket_id: str) -> Worker:
     for w in threads:
-        if w.socket_channel == channel and w.socket_id == socket_id:
+        if w.socket_channel == channel.lower() and w.socket_id == socket_id.lower():
             return w
 
 def removeThreads(channel, socket_id):
@@ -68,29 +59,39 @@ def removeThreads(channel, socket_id):
         exist = t.channel == channel and socket_id== t.socket_id.lower()
         if exist : 
             removidas += 1
-            print("THREADS REMOVIDAS: " + str(removidas))
+            # print("THREADS REMOVIDAS: " + str(removidas))
             t.stop()
             threads.remove(t)
 
-def removeAllThreads(socket_id):
-    removidas = 0
+def removeAllThreads(socket_id :str):
+    print(f"Preparando para remover.. {len(threads)}")
+    toRemove = []
     for t in threads: 
-        exist = socket_id == t.socket_id.lower()
+        exist = socket_id.lower() == t.socket_id
         if exist:
-            removidas += 1
-            print("THREADS REMOVIDAS: " + str(removidas))
             t.stop()
-            threads.remove(t)
+            toRemove.append(t)
+    for t in toRemove:
+        print(f"Removendo. {t.unique_id}")
 
-def restartThreadByChannel(channel, socket_id):
+        threads.remove(t)
+    
+            
+
+def restartThreadByChannel(channel: str, socket_id: str):
     worker = getThreadByChannel(channel, socket_id)
     if worker.switch:
         worker.stop()
-        worker = Worker(channel,socket_id, socketio)
+        worker = Worker(channel, socket_id, socketio)
         for i, n in enumerate(threads):
             if n.socket_channel == channel:
                 threads[i] = worker
     return worker
+
+@socketio.on('disconnect')
+def disconnect():
+    removeAllThreads(request.sid)
+    print('client disconnected', request.sid)
 
 @socketio.on('server_stats')
 def server_status(json):
@@ -101,12 +102,7 @@ def server_status(json):
 def process(json):
     worker = restartThreadByChannel("server_process_list", request.sid)
     worker.do_work(processes_thread, json)
-    
 
-
-
-   
- 
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host=os.getenv('HOST'),port=os.getenv('FLASK_PORT') or 5555)
