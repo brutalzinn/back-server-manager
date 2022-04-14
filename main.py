@@ -3,58 +3,50 @@ import time
 import psutil
 import os
 from threading import Lock
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, disconnect
 from psutil._common import bytes2human
 from models.stats_model import Data
+from ps_utilities import background_thread, processes_thread
+from worker import Worker
+# gambiarra por agora. Até criar uma classe pra facilitar condição de sinal
+
 app = Flask(__name__)
-# app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, logger=True)
-thread = None
-thread_lock = Lock()
-# CPU_CORE = psutil.cpu_count()
 
-@socketio.on('my event', namespace='/test')
-def handle_my_custom_namespace_event(json):
-    print('received json: ' + str(json))
+worker_processes = None
+worker_stats = None
 
-
-def background_thread():
-    """Example of how to send server generated events to clients."""
-    count = 0
-    while True:
-        count += 1
-        mem_usage = psutil.virtual_memory()
-        total_mem = bytes2human(mem_usage[0])
-        used_mem = bytes2human(mem_usage[3])
-        disk_percent = psutil.disk_usage('/').percent
-        cpu_percent = psutil.cpu_percent(interval=0.5)
-        cpu_frequency = psutil.cpu_freq().current
-
-        teste = Data(os.getenv('ORIGIN'))
-
-        teste.cpu_frequency = cpu_frequency
-        teste.cpu_percent = cpu_percent
-
-        teste.memory_used = used_mem
-        teste.total_mem = total_mem
-        teste.disk_percent = disk_percent
-
-        socketio.emit('data', teste.to_dict())
-        socketio.sleep(5)
-
-# @socketio.on('disconnect')
-# def disconnect():
-#     print('client disconnected',request.sid)
+@socketio.on('disconnect')
+def disconnect():
+    global worker_processes, worker_stats
+    if worker_processes != None : worker_processes.stop()
+    if worker_stats != None : worker_stats.stop()
+    print('Fecho a instância criada.')
+    print('client disconnected',request.sid)
 
 @socketio.on('connect')
 def connect():
-    global thread
-    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
-        disconnect()
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(background_thread)
-    
+    print('Inicio a conexão com ',request.sid)
+    # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
+    #     print("sem api key.")
+    #     socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
+    #     disconnect()
+
+@socketio.on('server_stats')
+def server_status(json):
+    global worker_stats
+    worker_stats = Worker(socketio)
+    print("inicio thread com hardware info e envio para o cliente")
+    worker_stats.do_work(background_thread, json)
+
+@socketio.on('server_process_list')
+def process(json):
+    global worker_processes
+    worker_processes = Worker(socketio)
+    print("inicio thread com uma lista de processos que pode ser filtrada por nome e por ordem de maior consumo de memória")
+    print("Recebi no body request",str(json))
+    worker_processes.do_work(processes_thread, json)
+
 if __name__ == '__main__':
-    socketio.run(app,debug=True, host=os.getenv('HOST'),port=os.getenv('FLASK_PORT'))
+    socketio.run(app, debug=True, host=os.getenv('HOST'),port=os.getenv('FLASK_PORT'))
