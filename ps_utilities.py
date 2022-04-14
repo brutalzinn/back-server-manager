@@ -20,7 +20,8 @@ def find_procs_by_name(name :str):
 
 def processes_thread(socketio, data):
     resultado = find_procs_by_name(data[0]['name'])
-    print(resultado)
+    print("PROCESS WORKER")
+
     socketio.emit('process_list', resultado)
     
 def background_thread(socketio, data):
@@ -41,6 +42,6 @@ def background_thread(socketio, data):
     teste.total_mem = total_mem
     teste.disk_percent = disk_percent
     resultado = teste.to_dict()
-    print(resultado)
+    print("BACKGROUND WORKER")
     socketio.emit('stats_monitor', resultado)
     
