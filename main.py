@@ -19,14 +19,16 @@ threads = []
 @socketio.on('connect')
 def connect():
 
+    # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
+    #     print("sem api key.")
+    #     socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
+    #     disconnect()
+        
     threads.append(Worker("server_process_list", request.sid, socketio))
     threads.append(Worker("server_stats", request.sid, socketio))
 
     print(f'Crio {len(threads)} threads para o ' + request.sid)
-    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
-        print("sem api key.")
-        socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
-        disconnect()
+
 
 def checkThreadIsRunning(channel) -> bool:
     for w in threads:
@@ -64,10 +66,7 @@ def removeAllThreads(socket_id :str):
             toRemove.append(t)
     for t in toRemove:
         print(f"Removendo. {t.unique_id}")
-
-        threads.remove(t)
-    
-            
+        threads.remove(t)      
 
 def restartThreadByChannel(channel: str, socket_id: str):
     worker = getThreadByChannel(channel, socket_id)
@@ -86,14 +85,16 @@ def disconnect():
 
 @socketio.on('server_stats')
 def server_status(json):
+    print("server_stats")
     worker = restartThreadByChannel("server_stats", request.sid)
     worker.do_work(background_thread, json)
 
 @socketio.on('server_process_list')
 def process(json):
+    print("server_process_list")
     worker = restartThreadByChannel("server_process_list", request.sid)
     worker.do_work(processes_thread, json)
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host=os.getenv('HOST'),port=os.getenv('FLASK_PORT') or 5555)
+    socketio.run(app, debug=True, host=os.getenv('HOST') or "0.0.0.0",port=os.getenv('FLASK_PORT') or 5555)
