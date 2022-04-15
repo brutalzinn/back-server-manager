@@ -25,7 +25,7 @@ class Worker(object):
         """
         assign socketio object to emit
         """
-        self.socket_id = socket_id.lower()
+        self.socket_id = socket_id#.lower()
         self.unique_id = str(uuid.uuid4())
         self.socket_channel = socket_channel.lower()
         self.socketio = socketio
@@ -45,7 +45,7 @@ class Worker(object):
             if not self.switch: break
             self.unit_of_work += 1
             print(f"Thread iniciada em: {self.unique_id} - {self.startAt}")
-            method(self.socketio, argv)
+            method(self, self.socketio, argv)
             self.socketio.sleep(3)
             
 

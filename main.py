@@ -43,13 +43,13 @@ def killThreadByChannel(channel) -> bool:
 
 def getThreadByChannel(channel:str , socket_id: str) -> Worker:
     for w in threads:
-        if w.socket_channel == channel.lower() and w.socket_id == socket_id.lower():
+        if w.socket_channel == channel.lower() and w.socket_id.lower() == socket_id.lower():
             return w
 
 def removeThreads(channel, socket_id):
     removidas = 0
     for t in threads: 
-        exist = t.channel == channel and socket_id== t.socket_id.lower()
+        exist = t.channel == channel and socket_id.lower() == t.socket_id.lower()
         if exist : 
             removidas += 1
             # print("THREADS REMOVIDAS: " + str(removidas))
@@ -60,7 +60,7 @@ def removeAllThreads(socket_id :str):
     print(f"Preparando para remover.. {len(threads)}")
     toRemove = []
     for t in threads: 
-        exist = socket_id.lower() == t.socket_id
+        exist = socket_id.lower() == t.socket_id.lower()
         if exist:
             t.stop()
             toRemove.append(t)
