@@ -19,10 +19,11 @@ threads = []
 @socketio.on('connect')
 def connect():
 
-    # if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
-    #     print("sem api key.")
-    #     socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
-    #     disconnect()
+    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.getenv('API_KEY'):
+        print("sem api key.")
+        socketio.emit("info", {"message":"Você não possui permissão para acessar esse servidor."})
+        disconnect()
+        return
         
     threads.append(Worker("server_process_list", request.sid, socketio))
     threads.append(Worker("server_stats", request.sid, socketio))
@@ -79,7 +80,7 @@ def restartThreadByChannel(channel: str, socket_id: str):
     return worker
 
 @socketio.on('disconnect')
-def disconnect():
+def remove_user_threads():
     removeAllThreads(request.sid)
     print('client disconnected', request.sid)
 
