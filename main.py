@@ -15,7 +15,7 @@ from worker import Worker
 app = Flask(__name__)
 socketio = SocketIO(app, logger=False)
 threads = []
-
+psutil.PROCFS_PATH = '/rootfs/proc'
 @socketio.on('connect')
 def connect():
 
