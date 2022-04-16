@@ -57,4 +57,7 @@ jobs:
         script_stop: true
         script: |
           cd /home/brutalzinn/servicos
-          docker-compose up --force-recreate >> compose.log 2>&1 &
+          docker-compose down >> compose.log 2>&1 &
+          docker docker rm -f $(docker ps -a -q) >> compose.log 2>&1 &
+          docker volume rm $(docker volume ls -q) >> compose.log 2>&1 &
+          docker-compose up -d >> compose.log 2>&1 &
